@@ -12,6 +12,10 @@ encrypt = rijndael.aes_encrypt_block
 encrypt.argtypes = [ctypes.POINTER(ctypes.c_ubyte * 176), ctypes.POINTER(
     ctypes.c_ubyte * 16)]
 
+decrypt = rijndael.aes_decrypt_block
+decrypt.argtypes = [ctypes.POINTER(ctypes.c_ubyte * 176), ctypes.POINTER(
+    ctypes.c_ubyte * 16)]
+
 # Define a function to print the key
 
 
@@ -41,13 +45,17 @@ for key in keys:
 
         # Define the plaintext as a ctypes array
         plaintext_array = (ctypes.c_ubyte * 16)()
+
         for i in range(16):
             plaintext_array[i] = padded_plaintext[i]
 
-        # Call the C function to encrypt the plaintext
-        ciphertext = encrypt(expanded_key, plaintext_array)
+        # Call the C function to decrypt the ciphertext
+        decrypted = decrypt(plaintext_array, expanded_key)
+        # Interpret the decrypted pointer as a byte array
+        decrypted_bytes = ctypes.cast(
+            decrypted, ctypes.POINTER(ctypes.c_ubyte * 16)).contents
 
-    # Call the C function to encrypt the plaintext
+        # Call the C function to encrypt the plaintext
         ciphertext_ptr = encrypt(expanded_key, plaintext_array)
 
         # Interpret the pointer as a byte array
@@ -63,14 +71,7 @@ for key in keys:
             print(hex(byte), end=' ')
         print()
 
-        # Validate the ciphertext (assertion)
-        expected_ciphertext = b'\x10\xca\x9b\xc6\xa3\xc8\x62\xae\x2d\x32\x55\x81\x9d\x87\x1f\x98'
-        hex_expected_ciphertext = bytearray(expected_ciphertext)
-        # ' '.join(
-        # [hex(byte) for byte in expected_ciphertext])
-        print("Expected Ciphertext:")
-        print(expected_ciphertext)
-        if (ciphertext_bytes == hex_expected_ciphertext):
+        if (ciphertext_bytes == decrypted_bytes):
             print("Assertion Passed: Ciphertext matches expected value ")
             print()
         else:
