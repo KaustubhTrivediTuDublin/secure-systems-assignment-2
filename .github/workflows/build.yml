@@ -1,25 +1,19 @@
-# name: Build the project
-# on: push
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Clone the repo
-#         uses: actions/checkout@v4
-#       - name: Build the code
-#         run: |
-#           sudo apt install -y build-essential python-is-python3
-#           make
-
-name: Test and Deploy
-
+name: Build the project
 on:
-  pull_request:
   push:
     branches:
+      - dev
       - main
-
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repo
+        uses: actions/checkout@v4
+      - name: Build the code
+        run: |
+          sudo apt install -y build-essential python-is-python3
+          make
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -39,7 +33,6 @@ jobs:
       - name: Run tests
         run: |
           python tests.py
-
   deploy:
     name: Deploy to Main
     needs: test
