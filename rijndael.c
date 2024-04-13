@@ -110,6 +110,7 @@ unsigned char *expand_key(unsigned char *cipher_key) {
   }
 
   return expanded_key;
+  free(expanded_key);
 }
 // Encryption starts
 
