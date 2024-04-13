@@ -1,6 +1,9 @@
 /*
  * TODO: Add your name and student number here, along with
  *       a brief description of this code.
+ *
+ * Name: Kaustubh Trivedi
+ * Student Number: D23124940
  */
 
 #ifndef RIJNDAEL_H

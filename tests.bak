@@ -1,0 +1,61 @@
+import sys
+from os.path import abspath, dirname, join
+from ctypes import CDLL, POINTER, c_ubyte
+import unittest
+
+# Load the AES functions from the library
+current_dir = dirname(abspath(__file__))
+lib = CDLL(join(current_dir, 'rijndael.so'))
+
+# Load the AES functions from the library
+expand_key = lib.expand_key
+expand_key.argtypes = [POINTER(c_ubyte)]
+expand_key.restype = POINTER(c_ubyte)
+
+encrypt_block = lib.aes_encrypt_block
+encrypt_block.argtypes = [POINTER(c_ubyte), POINTER(c_ubyte)]
+encrypt_block.restype = None
+
+decrypt_block = lib.aes_decrypt_block
+decrypt_block.argtypes = [POINTER(c_ubyte), POINTER(c_ubyte)]
+decrypt_block.restype = None
+
+
+class TestAES(unittest.TestCase):
+    def test_expand_key(self):
+        key = bytearray.fromhex("2b7e151628aed2a6abf7158809cf4f3c")
+        key_ptr = (c_ubyte * 16)(*key)
+        expanded_key_ptr = expand_key(key_ptr)
+
+        # Verify that the expanded key is correctly computed
+        expanded_key = bytes(expanded_key_ptr[:176])  # Corrected indexing
+        expected_expanded_key = bytearray.fromhex(
+            "2b7e151628aed2a6abf7158809cf4f3ca0fafe1788542cb123a339392a6c7605f2c295f27a8bd2767ec3d6b9068c257e9b58de876daa65682879e"
+        )
+
+        print("Expanded Key:", expanded_key)
+        print("Expected Expanded Key:", expected_expanded_key)
+        self.assertEqual(expanded_key, expected_expanded_key)
+
+    def test_encrypt_decrypt_block(self):
+        key = bytearray.fromhex("2b7e151628aed2a6abf7158809cf4f3c")
+        key_ptr = (c_ubyte * 16)(*key)
+        expanded_key_ptr = expand_key(key_ptr)
+
+        # Encrypt plaintext block
+        plaintext = bytearray.fromhex("3243f6a8885a308d313198a2e0370734")
+        plaintext_ptr = (c_ubyte * 16)(*plaintext)
+        encrypt_block(plaintext_ptr, expanded_key_ptr)
+
+        # Decrypt ciphertext block
+        decrypt_block(plaintext_ptr, expanded_key_ptr)
+
+        # Verify that encryption and decryption are consistent
+        decrypted_plaintext = bytes(plaintext_ptr)
+        print("Decrypted Plaintext:", decrypted_plaintext)
+        print("Expected Plaintext:", plaintext)
+        self.assertEqual(plaintext, decrypted_plaintext)
+
+
+if __name__ == "__main__":
+    unittest.main()
