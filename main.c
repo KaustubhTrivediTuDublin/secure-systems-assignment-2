@@ -8,7 +8,8 @@ void print_128bit_block(unsigned char *block) {
     for (int j = 0; j < 4; j++) {
       unsigned char value = BLOCK_ACCESS(block, i, j);
 
-      // Print spaces before small numbers to ensure that everything is aligned
+      // Print spaces before small numbers to ensure that everything is
+      // aligned
       // and looks nice
       if (value < 10) printf(" ");
 
@@ -40,6 +41,5 @@ int main() {
 
   free(ciphertext);
   free(recovered_plaintext);
-
   return 0;
 }

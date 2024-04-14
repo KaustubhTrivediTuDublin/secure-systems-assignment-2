@@ -1,5 +1,9 @@
 name: Build the project
-on: push
+on:
+  push:
+    branches:
+      - dev
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,3 +14,46 @@ jobs:
         run: |
           sudo apt install -y build-essential python-is-python3
           make
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Build with make
+        run: make
+
+      - name: Run tests
+        run: |
+          python tests.py
+  deploy:
+    name: Deploy to Main
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && success()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Git
+        run: |
+          git config user.name "Kaustubh Trivedi"
+          git config user.email "d23124940@mytudublin.ie"
+
+      - name: Commit changes
+        run: |
+          git add .
+          git commit -m "Test passed, deploying to main"
+
+      - name: Push to main
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
